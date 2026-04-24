@@ -450,7 +450,12 @@ function Library:CreateWindow(title, size, position)
                         Box.Size = UDim2.new(0, 20, 0, 14)
                         Box.Position = UDim2.new(1, -20, 0, 0)
 
-                        local KeyLabel = CreateTextLabel(Box, defaultKey or "-", Library.Theme.TextDim, Enum.TextXAlignment.Center)
+                        local keyName = "-"
+                        if defaultKey then
+                            keyName = defaultKey.Name
+                            if #keyName > 3 then keyName = string.sub(keyName, 1, 1) end
+                        end
+                        local KeyLabel = CreateTextLabel(Box, keyName, Library.Theme.TextDim, Enum.TextXAlignment.Center)
                         KeyLabel.Size = UDim2.new(1, 0, 1, 0)
 
                         local Btn = Instance.new("TextButton", Box)
