@@ -138,9 +138,12 @@ function Library:CreateWindow(title)
         TabBtn.Size = UDim2.new(1, 0, 0, 50)
         TabBtn.Text = ""
 
-        local Icon = CreateTextLabel(TabBtn, iconText, Library.Theme.TextDim, Enum.TextXAlignment.Center)
-        Icon.Size = UDim2.new(1, 0, 1, 0)
-        Icon.TextSize = 24 -- Large icon font
+        local Icon = Instance.new("ImageLabel", TabBtn)
+        Icon.BackgroundTransparency = 1
+        Icon.Size = UDim2.new(0, 24, 0, 24)
+        Icon.Position = UDim2.new(0.5, -12, 0.5, -12)
+        Icon.Image = iconText -- will be the rbxassetid
+        Icon.ImageColor3 = Library.Theme.TextDim
 
         local ActiveLine = Instance.new("Frame", TabBtn)
         ActiveLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -182,18 +185,18 @@ function Library:CreateWindow(title)
 
         TabBtn.MouseButton1Click:Connect(function()
             for _, t in pairs(self.Tabs) do
-                t.Icon.TextColor3 = Library.Theme.TextDim
+                t.Icon.ImageColor3 = Library.Theme.TextDim
                 t.ActiveLine.Visible = false
                 t.Content.Visible = false
             end
-            Icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             ActiveLine.Visible = true
             TabContent.Visible = true
             self.CurrentTab = Tab
         end)
 
         if #self.Tabs == 1 then
-            Icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             ActiveLine.Visible = true
             TabContent.Visible = true
             self.CurrentTab = Tab
