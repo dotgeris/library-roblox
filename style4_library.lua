@@ -75,6 +75,7 @@ function Library:CreateWindow(title, size, position)
     
     if title then
         local TitleLabel = CreateTextLabel(TopBar, title, Library.Theme.Text, Enum.TextXAlignment.Left)
+        TitleLabel.Position = UDim2.new(0, 5, 0, 0)
         TitleLabel.Size = UDim2.new(1, -10, 1, 0)
     end
 
@@ -86,6 +87,9 @@ function Library:CreateWindow(title, size, position)
             dragStart = input.Position
             startPos = WindowFrame.Position
             WindowFrame.ZIndex = 10 -- Bring to front
+            for _, win in ipairs(self.MainGui:GetChildren()) do
+                if win ~= WindowFrame and win:IsA("Frame") then win.ZIndex = 1 end
+            end
         end
     end)
     TopBar.InputEnded:Connect(function(input)
@@ -106,6 +110,70 @@ function Library:CreateWindow(title, size, position)
         Tabs = {},
         CurrentTab = nil
     }
+
+    -- HELPER FUNCTIONS FOR EXTRA WINDOWS (Keybinds, ESP)
+    function Window:AddLabel(leftText, rightText)
+        local Container = Instance.new("Frame", self.Frame)
+        Container.BackgroundTransparency = 1
+        Container.Size = UDim2.new(1, -10, 0, 16)
+        
+        -- Try to stack them using UIListLayout if not present
+        if not self.Frame:FindFirstChild("ContentLayout") then
+            local l = Instance.new("UIListLayout", self.Frame)
+            l.Name = "ContentLayout"
+            l.SortOrder = Enum.SortOrder.LayoutOrder
+            l.Padding = UDim.new(0, 2)
+            local p = Instance.new("UIPadding", self.Frame)
+            p.PaddingTop = UDim.new(0, 25)
+            p.PaddingLeft = UDim.new(0, 5)
+            p.PaddingRight = UDim.new(0, 5)
+        end
+        
+        local LLabel = CreateTextLabel(Container, leftText, Library.Theme.Text, Enum.TextXAlignment.Left)
+        LLabel.Size = UDim2.new(0.5, 0, 1, 0)
+        
+        if rightText then
+            local RLabel = CreateTextLabel(Container, rightText, Library.Theme.TextDim, Enum.TextXAlignment.Right)
+            RLabel.Size = UDim2.new(0.5, 0, 1, 0)
+            RLabel.Position = UDim2.new(0.5, 0, 0, 0)
+        end
+    end
+
+    function Window:CreateESPPreview()
+        local Canvas = Instance.new("Frame", self.Frame)
+        Canvas.BackgroundTransparency = 1
+        Canvas.Size = UDim2.new(1, -10, 1, -30)
+        Canvas.Position = UDim2.new(0, 5, 0, 25)
+        
+        local DummyBox = Instance.new("Frame", Canvas)
+        DummyBox.BackgroundTransparency = 1
+        DummyBox.BorderColor3 = Library.Theme.Accent
+        DummyBox.BorderSizePixel = 1
+        DummyBox.Size = UDim2.new(0, 100, 0, 180)
+        DummyBox.Position = UDim2.new(0.5, -50, 0.5, -90)
+        
+        local HealthBarBg = Instance.new("Frame", DummyBox)
+        HealthBarBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        HealthBarBg.BorderSizePixel = 0
+        HealthBarBg.Position = UDim2.new(0, -6, 0, 0)
+        HealthBarBg.Size = UDim2.new(0, 4, 1, 0)
+        
+        local HealthBar = Instance.new("Frame", HealthBarBg)
+        HealthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        HealthBar.BorderSizePixel = 0
+        HealthBar.Position = UDim2.new(0, 1, 0, 1)
+        HealthBar.Size = UDim2.new(1, -2, 1, -2)
+        
+        local Name = CreateTextLabel(DummyBox, "Player", Color3.fromRGB(255, 255, 255), Enum.TextXAlignment.Center)
+        Name.Position = UDim2.new(0, 0, 0, -15)
+        Name.Size = UDim2.new(1, 0, 0, 14)
+        Name.TextStrokeTransparency = 0
+        
+        local Weapon = CreateTextLabel(DummyBox, "AK-47", Library.Theme.Accent, Enum.TextXAlignment.Center)
+        Weapon.Position = UDim2.new(0, 0, 1, 2)
+        Weapon.Size = UDim2.new(1, 0, 0, 14)
+        Weapon.TextStrokeTransparency = 0
+    end
 
     if not title then
         -- This is a window that just needs to hold tabs (like the main window)
@@ -200,27 +268,21 @@ function Library:CreateWindow(title, size, position)
 
                 local LeftCol = Instance.new("Frame", SubContent)
                 LeftCol.BackgroundTransparency = 1
-                LeftCol.BorderColor3 = Library.Theme.Border
-                LeftCol.BorderSizePixel = 1
+                LeftCol.BorderSizePixel = 0
                 LeftCol.Size = UDim2.new(0.5, -2, 1, 0)
                 LeftCol.Position = UDim2.new(0, 0, 0, 0)
                 local LeftList = Instance.new("UIListLayout", LeftCol)
                 LeftList.SortOrder = Enum.SortOrder.LayoutOrder
                 LeftList.Padding = UDim.new(0, 6)
-                local LeftPad = Instance.new("UIPadding", LeftCol)
-                LeftPad.PaddingLeft = UDim.new(0, 5) LeftPad.PaddingRight = UDim.new(0, 5) LeftPad.PaddingTop = UDim.new(0, 5)
 
                 local RightCol = Instance.new("Frame", SubContent)
                 RightCol.BackgroundTransparency = 1
-                RightCol.BorderColor3 = Library.Theme.Border
-                RightCol.BorderSizePixel = 1
+                RightCol.BorderSizePixel = 0
                 RightCol.Size = UDim2.new(0.5, -2, 1, 0)
                 RightCol.Position = UDim2.new(0.5, 2, 0, 0)
                 local RightList = Instance.new("UIListLayout", RightCol)
                 RightList.SortOrder = Enum.SortOrder.LayoutOrder
                 RightList.Padding = UDim.new(0, 6)
-                local RightPad = Instance.new("UIPadding", RightCol)
-                RightPad.PaddingLeft = UDim.new(0, 5) RightPad.PaddingRight = UDim.new(0, 5) RightPad.PaddingTop = UDim.new(0, 5)
 
                 local SubTab = {
                     Button = SubBtn,
@@ -250,12 +312,47 @@ function Library:CreateWindow(title, size, position)
                     SubTabContainer.Visible = true
                 end
 
-                function SubTab:CreateGroup(side)
+                function SubTab:CreateGroup(name, side)
                     local targetCol = side == "left" and self.Left or self.Right
+                    
+                    local GroupBox = Instance.new("Frame", targetCol)
+                    GroupBox.BackgroundColor3 = Library.Theme.Background
+                    GroupBox.BorderColor3 = Library.Theme.Border
+                    GroupBox.BorderSizePixel = 1
+                    GroupBox.Size = UDim2.new(1, 0, 0, 20) -- Auto resized below
+
+                    local GroupTitle = Instance.new("TextLabel", GroupBox)
+                    GroupTitle.BackgroundColor3 = Library.Theme.WidgetBg
+                    GroupTitle.BorderSizePixel = 0
+                    GroupTitle.Size = UDim2.new(1, 0, 0, 20)
+                    GroupTitle.Font = Library.Theme.Font
+                    GroupTitle.TextSize = Library.Theme.TextSize
+                    GroupTitle.TextColor3 = Library.Theme.Text
+                    GroupTitle.Text = "  " .. name
+                    GroupTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+                    local AccentLine = Instance.new("Frame", GroupTitle)
+                    AccentLine.BackgroundColor3 = Library.Theme.Accent
+                    AccentLine.BorderSizePixel = 0
+                    AccentLine.Size = UDim2.new(0, 2, 1, 0)
+
+                    local ItemsContainer = Instance.new("Frame", GroupBox)
+                    ItemsContainer.BackgroundTransparency = 1
+                    ItemsContainer.Position = UDim2.new(0, 8, 0, 28)
+                    ItemsContainer.Size = UDim2.new(1, -16, 1, -32)
+
+                    local ItemList = Instance.new("UIListLayout", ItemsContainer)
+                    ItemList.SortOrder = Enum.SortOrder.LayoutOrder
+                    ItemList.Padding = UDim.new(0, 8)
+
+                    ItemList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                        GroupBox.Size = UDim2.new(1, 0, 0, ItemList.AbsoluteContentSize.Y + 36)
+                    end)
+
                     local Group = {}
                     
                     function Group:CreateCheckbox(text, default, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 14)
 
@@ -290,7 +387,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateSlider(text, min, max, default, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 26)
 
@@ -342,7 +439,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateDropdown(text, options, default, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 36)
 
@@ -411,32 +508,143 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateColorPicker(text, defaultColor, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 14)
-
+                        
                         local Label = CreateTextLabel(Frame, text, Library.Theme.Text, Enum.TextXAlignment.Left)
-                        Label.Size = UDim2.new(1, -20, 1, 0)
+                        Label.Size = UDim2.new(1, -30, 1, 0)
+                        
+                        local ColorBoxOuter = Instance.new("Frame", Frame)
+                        ColorBoxOuter.BackgroundColor3 = Library.Theme.Background
+                        ColorBoxOuter.BorderColor3 = Library.Theme.Border
+                        ColorBoxOuter.BorderSizePixel = 1
+                        ColorBoxOuter.Size = UDim2.new(0, 20, 0, 10)
+                        ColorBoxOuter.Position = UDim2.new(1, -20, 0.5, -5)
+                        
+                        local ColorBoxBg = Instance.new("Frame", ColorBoxOuter)
+                        ColorBoxBg.BackgroundColor3 = defaultColor or Color3.fromRGB(255, 0, 0)
+                        ColorBoxBg.BorderSizePixel = 0
+                        ColorBoxBg.Position = UDim2.new(0, 1, 0, 1)
+                        ColorBoxBg.Size = UDim2.new(1, -2, 1, -2)
+                        
+                        local ColorBtn = Instance.new("TextButton", ColorBoxOuter)
+                        ColorBtn.BackgroundTransparency = 1
+                        ColorBtn.Size = UDim2.new(1, 0, 1, 0)
+                        ColorBtn.Text = ""
 
-                        local Box = Instance.new("Frame", Frame)
-                        Box.BackgroundColor3 = defaultColor
-                        Box.BorderColor3 = Library.Theme.Border
-                        Box.BorderSizePixel = 1
-                        Box.Size = UDim2.new(0, 20, 0, 10)
-                        Box.Position = UDim2.new(1, -20, 0.5, -5)
+                        -- Actual Picker Grid
+                        local PickerOuter = Instance.new("Frame", self.MainGui)
+                        PickerOuter.BackgroundColor3 = Library.Theme.Background
+                        PickerOuter.BorderColor3 = Library.Theme.Border
+                        PickerOuter.BorderSizePixel = 1
+                        PickerOuter.Size = UDim2.new(0, 150, 0, 150)
+                        PickerOuter.Visible = false
+                        PickerOuter.ZIndex = 20
 
-                        -- Picker logic abbreviated for space (using simple click print for demo)
-                        local Btn = Instance.new("TextButton", Box)
-                        Btn.BackgroundTransparency = 1
-                        Btn.Size = UDim2.new(1, 0, 1, 0)
-                        Btn.Text = ""
-                        Btn.MouseButton1Click:Connect(function()
-                            if callback then callback(defaultColor) end
+                        local PickerBg = Instance.new("Frame", PickerOuter)
+                        PickerBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                        PickerBg.BorderSizePixel = 0
+                        PickerBg.Position = UDim2.new(0, 1, 0, 1)
+                        PickerBg.Size = UDim2.new(1, -2, 1, -2)
+                        PickerBg.ZIndex = 20
+
+                        local Rainbow = Instance.new("UIGradient", PickerBg)
+                        Rainbow.Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                            ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+                            ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                            ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)),
+                            ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                        })
+
+                        local Overlay1 = Instance.new("Frame", PickerBg)
+                        Overlay1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                        Overlay1.BorderSizePixel = 0
+                        Overlay1.Size = UDim2.new(1, 0, 1, 0)
+                        Overlay1.ZIndex = 21
+                        local Grad1 = Instance.new("UIGradient", Overlay1)
+                        Grad1.Rotation = 90
+                        Grad1.Transparency = NumberSequence.new({
+                            NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 1), NumberSequenceKeypoint.new(1, 1)
+                        })
+
+                        local Overlay2 = Instance.new("Frame", PickerBg)
+                        Overlay2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                        Overlay2.BorderSizePixel = 0
+                        Overlay2.Size = UDim2.new(1, 0, 1, 0)
+                        Overlay2.ZIndex = 22
+                        local Grad2 = Instance.new("UIGradient", Overlay2)
+                        Grad2.Rotation = 90
+                        Grad2.Transparency = NumberSequence.new({
+                            NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 1), NumberSequenceKeypoint.new(1, 0)
+                        })
+
+                        local CfgBtn = Instance.new("TextButton", PickerBg)
+                        CfgBtn.BackgroundTransparency = 1
+                        CfgBtn.Size = UDim2.new(1, 0, 1, 0)
+                        CfgBtn.Text = ""
+                        CfgBtn.ZIndex = 23
+
+                        local Cursor = Instance.new("Frame", PickerBg)
+                        Cursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                        Cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                        Cursor.BorderSizePixel = 1
+                        Cursor.Size = UDim2.new(0, 4, 0, 4)
+                        Cursor.ZIndex = 24
+
+                        local currentColor = ColorBoxBg.BackgroundColor3
+                        local function updateCursorFromColor(color)
+                            local h, s, v = color:ToHSV()
+                            local x = h
+                            local y = s < 1 and (s / 2) or (v < 1 and 0.5 + (1 - v) / 2 or 0.5)
+                            Cursor.Position = UDim2.new(x, -2, y, -2)
+                        end
+                        updateCursorFromColor(currentColor)
+
+                        local dragging = false
+                        CfgBtn.MouseButton1Down:Connect(function() dragging = true end)
+                        UserInputService.InputEnded:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
                         end)
+                        
+                        local GuiService = game:GetService("GuiService")
+                        table.insert(Library.Connections, RunService.RenderStepped:Connect(function()
+                            if dragging and PickerOuter.Visible then
+                                local mousePos = UserInputService:GetMouseLocation()
+                                local guiInset = GuiService:GetGuiInset()
+                                local mouseX, mouseY = mousePos.X - guiInset.X, mousePos.Y - guiInset.Y
+                                local rectPos, rectSize = PickerBg.AbsolutePosition, PickerBg.AbsoluteSize
+                                local x = math.clamp((mouseX - rectPos.X) / rectSize.X, 0, 1)
+                                local y = math.clamp((mouseY - rectPos.Y) / rectSize.Y, 0, 1)
+                                Cursor.Position = UDim2.new(x, -2, y, -2)
+                                
+                                local h, s, v = x, 1, 1
+                                if y <= 0.5 then s = y * 2 else v = 1 - (y - 0.5) * 2 end
+                                currentColor = Color3.fromHSV(h, s, v)
+                                ColorBoxBg.BackgroundColor3 = currentColor
+                                if callback then callback(currentColor) end
+                            end
+                        end))
+
+                        ColorBtn.MouseButton1Click:Connect(function()
+                            PickerOuter.Visible = not PickerOuter.Visible
+                            if PickerOuter.Visible then
+                                PickerOuter.Position = UDim2.new(0, ColorBoxOuter.AbsolutePosition.X + 25, 0, ColorBoxOuter.AbsolutePosition.Y)
+                            end
+                        end)
+
+                        table.insert(Library.Connections, RunService.RenderStepped:Connect(function()
+                            if PickerOuter.Visible then
+                                PickerOuter.Position = UDim2.new(0, ColorBoxOuter.AbsolutePosition.X + 25, 0, ColorBoxOuter.AbsolutePosition.Y)
+                            end
+                        end))
                     end
 
                     function Group:CreateKeybind(text, defaultKey, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 14)
 
@@ -489,7 +697,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateButton(text, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 20)
 
@@ -509,7 +717,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateButtonGroup(text, options, default, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 16)
 
@@ -552,7 +760,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateListbox(text, options, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 120)
 
@@ -593,7 +801,7 @@ function Library:CreateWindow(title, size, position)
                     end
 
                     function Group:CreateTextbox(text, placeholder, callback)
-                        local Frame = Instance.new("Frame", targetCol)
+                        local Frame = Instance.new("Frame", ItemsContainer)
                         Frame.BackgroundTransparency = 1
                         Frame.Size = UDim2.new(1, 0, 0, 34)
 
