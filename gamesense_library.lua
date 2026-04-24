@@ -53,8 +53,8 @@ function Library:CreateWindow(title)
     OuterBorder.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     OuterBorder.BorderColor3 = Color3.fromRGB(30, 30, 30)
     OuterBorder.BorderSizePixel = 1
-    OuterBorder.Position = UDim2.new(0.5, -300, 0.5, -250)
-    OuterBorder.Size = UDim2.new(0, 600, 0, 500)
+    OuterBorder.Position = UDim2.new(0.5, -330, 0.5, -300)
+    OuterBorder.Size = UDim2.new(0, 660, 0, 600)
 
     local MainBg = Instance.new("Frame", OuterBorder)
     MainBg.BackgroundColor3 = Library.Theme.Background
