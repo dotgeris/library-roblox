@@ -140,8 +140,8 @@ function Library:CreateWindow(title)
 
         local Icon = Instance.new("ImageLabel", TabBtn)
         Icon.BackgroundTransparency = 1
-        Icon.Size = UDim2.new(0, 24, 0, 24)
-        Icon.Position = UDim2.new(0.5, -12, 0.5, -12)
+        Icon.Size = UDim2.new(0, 36, 0, 36)
+        Icon.Position = UDim2.new(0.5, -18, 0.5, -18)
         Icon.Image = iconText -- will be the rbxassetid
         Icon.ImageColor3 = Library.Theme.TextDim
 
