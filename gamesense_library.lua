@@ -446,6 +446,141 @@ function Library:CreateWindow(title)
                 end))
             end
 
+            function Group:CreateColorPicker(text, defaultColor, callback)
+                local Frame = Instance.new("Frame", ItemsContainer)
+                Frame.BackgroundTransparency = 1
+                Frame.Size = UDim2.new(1, 0, 0, 14)
+                
+                local Label = CreateTextLabel(Frame, text, Library.Theme.Text, Enum.TextXAlignment.Left)
+                Label.Size = UDim2.new(1, -30, 1, 0)
+                
+                local ColorBoxOuter = Instance.new("Frame", Frame)
+                ColorBoxOuter.BackgroundColor3 = Library.Theme.Background
+                ColorBoxOuter.BorderColor3 = Library.Theme.Border
+                ColorBoxOuter.BorderSizePixel = 1
+                ColorBoxOuter.Size = UDim2.new(0, 20, 0, 10)
+                ColorBoxOuter.Position = UDim2.new(1, -20, 0.5, -5)
+                
+                local ColorBoxBg = Instance.new("Frame", ColorBoxOuter)
+                ColorBoxBg.BackgroundColor3 = defaultColor or Color3.fromRGB(255, 0, 0)
+                ColorBoxBg.BorderSizePixel = 0
+                ColorBoxBg.Position = UDim2.new(0, 1, 0, 1)
+                ColorBoxBg.Size = UDim2.new(1, -2, 1, -2)
+                
+                local ColorBtn = Instance.new("TextButton", ColorBoxOuter)
+                ColorBtn.BackgroundTransparency = 1
+                ColorBtn.Size = UDim2.new(1, 0, 1, 0)
+                ColorBtn.Text = ""
+
+                local PickerOuter = Instance.new("Frame", MainGui)
+                PickerOuter.BackgroundColor3 = Library.Theme.Background
+                PickerOuter.BorderColor3 = Library.Theme.Border
+                PickerOuter.BorderSizePixel = 1
+                PickerOuter.Size = UDim2.new(0, 150, 0, 150)
+                PickerOuter.Visible = false
+                PickerOuter.ZIndex = 20
+
+                local PickerBg = Instance.new("Frame", PickerOuter)
+                PickerBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                PickerBg.BorderSizePixel = 0
+                PickerBg.Position = UDim2.new(0, 1, 0, 1)
+                PickerBg.Size = UDim2.new(1, -2, 1, -2)
+                PickerBg.ZIndex = 20
+
+                local Rainbow = Instance.new("UIGradient", PickerBg)
+                Rainbow.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                })
+
+                local Overlay1 = Instance.new("Frame", PickerBg)
+                Overlay1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Overlay1.BorderSizePixel = 0
+                Overlay1.Size = UDim2.new(1, 0, 1, 0)
+                Overlay1.ZIndex = 21
+                local Grad1 = Instance.new("UIGradient", Overlay1)
+                Grad1.Rotation = 90
+                Grad1.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 1), NumberSequenceKeypoint.new(1, 1)
+                })
+
+                local Overlay2 = Instance.new("Frame", PickerBg)
+                Overlay2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                Overlay2.BorderSizePixel = 0
+                Overlay2.Size = UDim2.new(1, 0, 1, 0)
+                Overlay2.ZIndex = 22
+                local Grad2 = Instance.new("UIGradient", Overlay2)
+                Grad2.Rotation = 90
+                Grad2.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 1), NumberSequenceKeypoint.new(1, 0)
+                })
+
+                local CfgBtn = Instance.new("TextButton", PickerBg)
+                CfgBtn.BackgroundTransparency = 1
+                CfgBtn.Size = UDim2.new(1, 0, 1, 0)
+                CfgBtn.Text = ""
+                CfgBtn.ZIndex = 23
+
+                local Cursor = Instance.new("Frame", PickerBg)
+                Cursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Cursor.BorderSizePixel = 1
+                Cursor.Size = UDim2.new(0, 4, 0, 4)
+                Cursor.ZIndex = 24
+
+                local currentColor = ColorBoxBg.BackgroundColor3
+                local function updateCursorFromColor(color)
+                    local h, s, v = color:ToHSV()
+                    local x = h
+                    local y = s < 1 and (s / 2) or (v < 1 and 0.5 + (1 - v) / 2 or 0.5)
+                    Cursor.Position = UDim2.new(x, -2, y, -2)
+                end
+                updateCursorFromColor(currentColor)
+
+                local dragging = false
+                CfgBtn.MouseButton1Down:Connect(function() dragging = true end)
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+                end)
+                
+                local GuiService = game:GetService("GuiService")
+                table.insert(Library.Connections, RunService.RenderStepped:Connect(function()
+                    if dragging and PickerOuter.Visible then
+                        local mousePos = UserInputService:GetMouseLocation()
+                        local guiInset = GuiService:GetGuiInset()
+                        local mouseX, mouseY = mousePos.X - guiInset.X, mousePos.Y - guiInset.Y
+                        local rectPos, rectSize = PickerBg.AbsolutePosition, PickerBg.AbsoluteSize
+                        local x = math.clamp((mouseX - rectPos.X) / rectSize.X, 0, 1)
+                        local y = math.clamp((mouseY - rectPos.Y) / rectSize.Y, 0, 1)
+                        Cursor.Position = UDim2.new(x, -2, y, -2)
+                        
+                        local h, s, v = x, 1, 1
+                        if y <= 0.5 then s = y * 2 else v = 1 - (y - 0.5) * 2 end
+                        currentColor = Color3.fromHSV(h, s, v)
+                        ColorBoxBg.BackgroundColor3 = currentColor
+                        if callback then callback(currentColor) end
+                    end
+                end))
+
+                ColorBtn.MouseButton1Click:Connect(function()
+                    PickerOuter.Visible = not PickerOuter.Visible
+                    if PickerOuter.Visible then
+                        PickerOuter.Position = UDim2.new(0, ColorBoxOuter.AbsolutePosition.X + 25, 0, ColorBoxOuter.AbsolutePosition.Y)
+                    end
+                end)
+
+                table.insert(Library.Connections, RunService.RenderStepped:Connect(function()
+                    if PickerOuter.Visible then
+                        PickerOuter.Position = UDim2.new(0, ColorBoxOuter.AbsolutePosition.X + 25, 0, ColorBoxOuter.AbsolutePosition.Y)
+                    end
+                end))
+            end
+
             return Group
         end
         return Tab
