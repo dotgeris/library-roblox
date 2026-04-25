@@ -316,7 +316,7 @@ function Library:CreateWindow(title, size, position)
         TabContent.Size = UDim2.new(1, 0, 1, 0)
         TabContent.Visible = false
         TabContent.ScrollBarThickness = 0
-        TabContent.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
+        TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 
         local TabPadding = Instance.new("UIPadding")
