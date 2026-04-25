@@ -29,6 +29,136 @@ function Library:Unload()
     end
 end
 
+function Library:OpenColorPicker(default, callback)
+    if self.PickerFrame then self.PickerFrame:Destroy() end
+
+    local h, s, v = default:ToHSV()
+    
+    local PickerFrame = Instance.new("Frame")
+    PickerFrame.Name = "ColorPicker"
+    PickerFrame.Parent = self.MainGui
+    PickerFrame.BackgroundColor3 = Library.Theme.Background
+    PickerFrame.BorderColor3 = Library.Theme.Border
+    PickerFrame.BorderSizePixel = 1
+    PickerFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    PickerFrame.Size = UDim2.new(0, 200, 0, 200)
+    PickerFrame.ZIndex = 100
+    self.PickerFrame = PickerFrame
+
+    local PickerCorner = Instance.new("UICorner")
+    PickerCorner.CornerRadius = UDim.new(0, 4)
+    PickerCorner.Parent = PickerFrame
+
+    local SVCanvas = Instance.new("Frame")
+    SVCanvas.Name = "SVCanvas"
+    SVCanvas.Parent = PickerFrame
+    SVCanvas.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+    SVCanvas.Position = UDim2.new(0, 10, 0, 10)
+    SVCanvas.Size = UDim2.new(0, 150, 0, 150)
+    
+    local WhiteGrad = Instance.new("Frame")
+    WhiteGrad.Parent = SVCanvas
+    WhiteGrad.Size = UDim2.new(1, 0, 1, 0)
+    local WG = Instance.new("UIGradient")
+    WG.Transparency = NumberSequence.new(0, 1)
+    WG.Parent = WhiteGrad
+    
+    local BlackGrad = Instance.new("Frame")
+    BlackGrad.Parent = SVCanvas
+    BlackGrad.Size = UDim2.new(1, 0, 1, 0)
+    local BG = Instance.new("UIGradient")
+    BG.Rotation = 90
+    BG.Transparency = NumberSequence.new(0, 1)
+    BG.Color = ColorSequence.new(Color3.new(0,0,0))
+    BG.Parent = BlackGrad
+
+    local Cursor = Instance.new("Frame")
+    Cursor.Parent = SVCanvas
+    Cursor.BackgroundColor3 = Color3.new(1,1,1)
+    Cursor.BorderColor3 = Color3.new(0,0,0)
+    Cursor.Size = UDim2.new(0, 4, 0, 4)
+    Cursor.Position = UDim2.new(s, -2, 1-v, -2)
+
+    local HueSlider = Instance.new("Frame")
+    HueSlider.Name = "HueSlider"
+    HueSlider.Parent = PickerFrame
+    HueSlider.Position = UDim2.new(0, 170, 0, 10)
+    HueSlider.Size = UDim2.new(0, 20, 0, 150)
+    
+    local HueGrad = Instance.new("UIGradient")
+    HueGrad.Rotation = 90
+    HueGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
+        ColorSequenceKeypoint.new(0.167, Color3.fromHSV(0.167, 1, 1)),
+        ColorSequenceKeypoint.new(0.333, Color3.fromHSV(0.333, 1, 1)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+        ColorSequenceKeypoint.new(0.667, Color3.fromHSV(0.667, 1, 1)),
+        ColorSequenceKeypoint.new(0.833, Color3.fromHSV(0.833, 1, 1)),
+        ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 1, 1))
+    })
+    HueGrad.Parent = HueSlider
+
+    local HueCursor = Instance.new("Frame")
+    HueCursor.Parent = HueSlider
+    HueCursor.BackgroundColor3 = Color3.new(1,1,1)
+    HueCursor.BorderColor3 = Color3.new(0,0,0)
+    HueCursor.Size = UDim2.new(1, 0, 0, 2)
+    HueCursor.Position = UDim2.new(0, 0, 1-h, 0)
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Parent = PickerFrame
+    CloseBtn.BackgroundColor3 = Library.Theme.WidgetBg
+    CloseBtn.Position = UDim2.new(0, 10, 1, -30)
+    CloseBtn.Size = UDim2.new(1, -20, 0, 20)
+    CloseBtn.Text = "Apply"
+    CloseBtn.TextColor3 = Library.Theme.Text
+    CloseBtn.Font = Library.Theme.Font
+
+    local function UpdateColor()
+        local color = Color3.fromHSV(h, s, v)
+        SVCanvas.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+        callback(color)
+    end
+
+    local svDragging = false
+    SVCanvas.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then svDragging = true end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then svDragging = false end
+    end)
+
+    local hDragging = false
+    HueSlider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then hDragging = true end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then hDragging = false end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if not PickerFrame.Parent then return end
+        local mousePos = UserInputService:GetMouseLocation() - game:GetService("GuiService"):GetGuiInset()
+        if svDragging then
+            s = math.clamp((mousePos.X - SVCanvas.AbsolutePosition.X) / SVCanvas.AbsoluteSize.X, 0, 1)
+            v = 1 - math.clamp((mousePos.Y - SVCanvas.AbsolutePosition.Y) / SVCanvas.AbsoluteSize.Y, 0, 1)
+            Cursor.Position = UDim2.new(s, -2, 1-v, -2)
+            UpdateColor()
+        end
+        if hDragging then
+            h = 1 - math.clamp((mousePos.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
+            HueCursor.Position = UDim2.new(0, 0, 1-h, 0)
+            UpdateColor()
+        end
+    end)
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        PickerFrame:Destroy()
+    end)
+    
+    MakeDraggable(PickerFrame, PickerFrame)
+end
+
 local function CreateTextLabel(parent, text, color, align)
     local Label = Instance.new("TextLabel")
     Label.Name = "Label"
@@ -352,7 +482,7 @@ function Library:CreateWindow(title, size, position)
                 Btn.Name = "Button"
                 Btn.Parent = ToggleFrame
                 Btn.BackgroundTransparency = 1
-                Btn.Size = UDim2.new(1, 0, 1, 0)
+                Btn.Size = UDim2.new(1, -50, 1, 0) -- Leave space for keybind/colorpicker on right
                 Btn.Text = ""
 
                 local toggled = default or false
@@ -372,10 +502,12 @@ function Library:CreateWindow(title, size, position)
 
                 function Toggle:CreateKeybind(defaultKey, callback)
                     local KeyLabel = CreateTextLabel(ToggleFrame, defaultKey and defaultKey.Name or "NONE", Library.Theme.TextDim, Enum.TextXAlignment.Right)
-                    KeyLabel.Size = UDim2.new(1, 0, 1, 0)
+                    KeyLabel.Size = UDim2.new(0, 40, 1, 0)
+                    KeyLabel.Position = UDim2.new(1, -40, 0, 0)
+                    KeyLabel.TextSize = 11
                     
                     local KeyBtn = Instance.new("TextButton")
-                    KeyBtn.Parent = ToggleFrame
+                    KeyBtn.Parent = KeyLabel
                     KeyBtn.BackgroundTransparency = 1
                     KeyBtn.Size = UDim2.new(1, 0, 1, 0)
                     KeyBtn.Text = ""
@@ -385,16 +517,52 @@ function Library:CreateWindow(title, size, position)
                     KeyBtn.MouseButton1Click:Connect(function()
                         listening = true
                         KeyLabel.Text = "..."
+                        KeyLabel.TextColor3 = Library.Theme.Accent
                     end)
 
                     table.insert(Library.Connections, UserInputService.InputBegan:Connect(function(input, gp)
                         if listening and input.UserInputType == Enum.UserInputType.Keyboard then
                             listening = false
                             local key = input.KeyCode
-                            KeyLabel.Text = key.Name
+                            if key == Enum.KeyCode.Escape then
+                                KeyLabel.Text = "NONE"
+                            else
+                                KeyLabel.Text = key.Name
+                            end
+                            KeyLabel.TextColor3 = Library.Theme.TextDim
                             if callback then callback(key) end
                         end
                     end))
+                    return Toggle
+                end
+
+                function Toggle:CreateColorPicker(default, callback)
+                    local Box = Instance.new("Frame")
+                    Box.Name = "Box"
+                    Box.Parent = ToggleFrame
+                    Box.BackgroundColor3 = default or Color3.fromRGB(255, 255, 255)
+                    Box.BorderColor3 = Library.Theme.Border
+                    Box.BorderSizePixel = 1
+                    Box.Position = UDim2.new(1, -65, 0.5, -6)
+                    Box.Size = UDim2.new(0, 16, 0, 10)
+
+                    local BoxCorner = Instance.new("UICorner")
+                    BoxCorner.CornerRadius = UDim.new(0, 2)
+                    BoxCorner.Parent = Box
+
+                    local ColorBtn = Instance.new("TextButton")
+                    ColorBtn.Parent = Box
+                    ColorBtn.BackgroundTransparency = 1
+                    ColorBtn.Size = UDim2.new(1, 0, 1, 0)
+                    ColorBtn.Text = ""
+
+                    ColorBtn.MouseButton1Click:Connect(function()
+                        Library:OpenColorPicker(Box.BackgroundColor3, function(color)
+                            Box.BackgroundColor3 = color
+                            if callback then callback(color) end
+                        end)
+                    end)
+                    return Toggle
                 end
 
                 return Toggle
@@ -595,11 +763,11 @@ function Library:CreateWindow(title, size, position)
                 Btn.Size = UDim2.new(1, 0, 1, 0)
                 Btn.Text = ""
 
-                -- Simplified color picker for now
                 Btn.MouseButton1Click:Connect(function()
-                    local newColor = Color3.fromHSV(tick() % 5 / 5, 1, 1) -- Random/Cycling color for demo
-                    Box.BackgroundColor3 = newColor
-                    if callback then callback(newColor) end
+                    Library:OpenColorPicker(Box.BackgroundColor3, function(color)
+                        Box.BackgroundColor3 = color
+                        if callback then callback(color) end
+                    end)
                 end)
 
                 return {
