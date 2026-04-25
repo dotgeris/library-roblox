@@ -111,7 +111,7 @@ function Library:CreateWindow(title, size, position)
     TitleContainer.Parent = TopBar
     TitleContainer.BackgroundTransparency = 1
     TitleContainer.Position = UDim2.new(0, 15, 0, 0)
-    TitleContainer.Size = UDim2.new(0, 150, 1, 0)
+    TitleContainer.Size = UDim2.new(0, 80, 1, 0)
 
     local ImGuiLabel = CreateTextLabel(TitleContainer, "ImGui", Library.Theme.Text)
     ImGuiLabel.Size = UDim2.new(0, 40, 1, 0)
@@ -126,8 +126,8 @@ function Library:CreateWindow(title, size, position)
     TabContainer.Name = "Tabs"
     TabContainer.Parent = TopBar
     TabContainer.BackgroundTransparency = 1
-    TabContainer.Position = UDim2.new(0, 120, 0, 0)
-    TabContainer.Size = UDim2.new(1, -130, 1, 0)
+    TabContainer.Position = UDim2.new(0, 100, 0, 0)
+    TabContainer.Size = UDim2.new(1, -110, 1, 0)
 
     local TabsLayout = Instance.new("UIListLayout")
     TabsLayout.Parent = TabContainer
@@ -198,7 +198,8 @@ function Library:CreateWindow(title, size, position)
         LeftCol.Name = "Left"
         LeftCol.Parent = TabContent
         LeftCol.BackgroundTransparency = 1
-        LeftCol.Size = UDim2.new(0.5, -5, 1, 0)
+        LeftCol.Size = UDim2.new(0.5, -5, 0, 0)
+        LeftCol.AutomaticSize = Enum.AutomaticSize.Y
 
         local LeftLayout = Instance.new("UIListLayout")
         LeftLayout.Parent = LeftCol
@@ -210,7 +211,8 @@ function Library:CreateWindow(title, size, position)
         RightCol.Parent = TabContent
         RightCol.BackgroundTransparency = 1
         RightCol.Position = UDim2.new(0.5, 5, 0, 0)
-        RightCol.Size = UDim2.new(0.5, -5, 1, 0)
+        RightCol.Size = UDim2.new(0.5, -5, 0, 0)
+        RightCol.AutomaticSize = Enum.AutomaticSize.Y
 
         local RightLayout = Instance.new("UIListLayout")
         RightLayout.Parent = RightCol
