@@ -100,7 +100,7 @@ function Library:CreateWindow(title, size, position)
     TopBar.Parent = WindowFrame
     TopBar.BackgroundColor3 = Library.Theme.Background
     TopBar.BorderSizePixel = 0
-    TopBar.Size = UDim2.new(1, 0, 0, 45)
+    TopBar.Size = UDim2.new(1, 0, 0, 35)
 
     local TopBarCorner = Instance.new("UICorner")
     TopBarCorner.CornerRadius = UDim.new(0, 4)
@@ -126,8 +126,8 @@ function Library:CreateWindow(title, size, position)
     TabContainer.Name = "Tabs"
     TabContainer.Parent = TopBar
     TabContainer.BackgroundTransparency = 1
-    TabContainer.Position = UDim2.new(0, 140, 0, 0)
-    TabContainer.Size = UDim2.new(1, -150, 1, 0)
+    TabContainer.Position = UDim2.new(0, 120, 0, 0)
+    TabContainer.Size = UDim2.new(1, -130, 1, 0)
 
     local TabsLayout = Instance.new("UIListLayout")
     TabsLayout.Parent = TabContainer
@@ -139,8 +139,8 @@ function Library:CreateWindow(title, size, position)
     ContentArea.Name = "Content"
     ContentArea.Parent = WindowFrame
     ContentArea.BackgroundTransparency = 1
-    ContentArea.Position = UDim2.new(0, 10, 0, 50)
-    ContentArea.Size = UDim2.new(1, -20, 1, -60)
+    ContentArea.Position = UDim2.new(0, 10, 0, 40)
+    ContentArea.Size = UDim2.new(1, -20, 1, -50)
 
     MakeDraggable(TopBar, WindowFrame)
 
@@ -156,11 +156,17 @@ function Library:CreateWindow(title, size, position)
         TabBtn.Parent = TabContainer
         TabBtn.BackgroundTransparency = 1
         TabBtn.BorderSizePixel = 0
-        TabBtn.Size = UDim2.new(0, 70, 1, 0)
+        TabBtn.Size = UDim2.new(0, 0, 1, 0)
+        TabBtn.AutomaticSize = Enum.AutomaticSize.X
         TabBtn.Font = Library.Theme.Font
         TabBtn.TextSize = 13
         TabBtn.TextColor3 = Library.Theme.TextDim
         TabBtn.Text = name
+
+        local TabPadding = Instance.new("UIPadding")
+        TabPadding.PaddingLeft = UDim.new(0, 15)
+        TabPadding.PaddingRight = UDim.new(0, 15)
+        TabPadding.Parent = TabBtn
 
         local Indicator = Instance.new("Frame")
         Indicator.Name = "Indicator"
@@ -170,6 +176,7 @@ function Library:CreateWindow(title, size, position)
         Indicator.Position = UDim2.new(0, 0, 1, -2)
         Indicator.Size = UDim2.new(1, 0, 0, 2)
         Indicator.Visible = false
+        Indicator.ZIndex = 2
 
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Name = name .. "Content"
@@ -179,6 +186,8 @@ function Library:CreateWindow(title, size, position)
         TabContent.Size = UDim2.new(1, 0, 1, 0)
         TabContent.Visible = false
         TabContent.ScrollBarThickness = 0
+        TabContent.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
+        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 
         local TabPadding = Instance.new("UIPadding")
         TabPadding.Parent = TabContent
@@ -273,10 +282,14 @@ function Library:CreateWindow(title, size, position)
             HeaderLine.Size = UDim2.new(1, 0, 0, 1)
             HeaderLine.ZIndex = 0
 
-            HeaderLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-                HeaderLine.Position = UDim2.new(0, HeaderLabel.AbsoluteSize.X + 10, 0.5, 0)
-                HeaderLine.Size = UDim2.new(1, -(HeaderLabel.AbsoluteSize.X + 10), 0, 1)
-            end)
+            local function UpdateLine()
+                local labelWidth = HeaderLabel.AbsoluteSize.X
+                HeaderLine.Position = UDim2.new(0, labelWidth + 10, 0.5, 0)
+                HeaderLine.Size = UDim2.new(1, -(labelWidth + 10), 0, 1)
+            end
+
+            HeaderLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(UpdateLine)
+            task.defer(UpdateLine)
 
             local Container = Instance.new("Frame")
             Container.Name = "Container"
